@@ -1,0 +1,163 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// because C reads from top-down, we call the sort before its implementation
+void insertSort(int arr[], int p[], int n);
+
+int main() {
+    int i = 0;
+    int j = 0;
+    int numProcesses = 0;
+    float timeSlice = 0.0;
+    float total = 0.0; 
+    int maxBurstTime = 0;
+    int temp = 0;
+
+    int process[10];
+
+    int contextSwitch = 0; // we will increment this variable for every context switch done in the algorithm.
+    int burstTime[10];
+    int backupBurstTime[10];
+    int waitTime[10];
+    int turnAroundTime[10];
+    int responseTime[10];
+
+    float avgWaitTime = 0.0;
+    float avgTurnAroundTime = 0.0;
+    float avgResponseTime = 0.0;
+
+    printf("\t CPU Scheduling Method: Round Robin \n");
+    printf("\n\t Enter the no of processes: ");
+    scanf("%d", &numProcesses);
+
+    for (i = 0; i < numProcesses; i++) {
+        printf("\n\t Enter Burst Time for process %d: ", i+1);
+        scanf("%d", &burstTime[i]);
+        backupBurstTime[i] = burstTime[i];
+        process[i] = i+1;
+
+        // this is the same as total = total + burstTime[i];
+        total += burstTime[i];
+    }
+
+
+    insertSort(backupBurstTime, process, numProcesses);
+    for (int i=0; i < numProcesses; i++) {
+        burstTime[i] = backupBurstTime[i];
+    }
+
+    printf("\t this is the total of all the processes burst times: %f\n\n", total);
+
+    // dividing the total of burst times with the number of processes. 
+    timeSlice = total / numProcesses;
+
+
+
+    printf("\t this is the calculated timeslice: %f\n\n", timeSlice);
+
+
+   
+
+    maxBurstTime = burstTime[0];
+    // Finding the process with the highest burst time,
+    // and store in the variable called maxBurstTime.
+    for (i = 0; i < numProcesses; i++) {
+        if (maxBurstTime < burstTime[i]) {
+            maxBurstTime = burstTime[i];
+        }
+    }
+    // loops through each process to determine if it 
+    // has completed execution.
+    for (j = 0; j < (maxBurstTime / timeSlice) + 1; j++) {
+        // if the burst time of the current process is less than
+        // the time slice, the process is considered complete
+        // and its turnaround time is calculated. 
+        for (i = 0; i < numProcesses; i++) {
+            if (burstTime[i] != 0) {
+                if (burstTime[i] <= timeSlice) {
+                    turnAroundTime[i] = temp + burstTime[i];
+                    temp = temp + burstTime[i];
+                    burstTime[i] = 0;
+                    contextSwitch++;
+                }
+                // else, the process is allowed to run for the timeslice,
+                // and the remaining burst time is stored for future iterations.
+                else {
+                    burstTime[i] = burstTime[i] - timeSlice;
+                    temp = temp + timeSlice;
+                    contextSwitch++;
+                }
+            }
+        }
+    }
+
+    
+    /* Calculate the 'waiting time', 'turn-around-time' and
+       'response time' for each process. */
+    
+    /* Waiting Time */
+    for (i = 0; i < numProcesses; i++) {
+        waitTime[i] = turnAroundTime[i] - backupBurstTime[i];
+    }
+
+    /* Response Time */
+    responseTime[0] = 0; // first process always 0 since arrival time not learnt
+
+    for(i = 1; i < numProcesses; i++) {
+        // i = 1 because start from 2nd process.
+        if (backupBurstTime[i-1] > timeSlice) {
+            // if previous burst time is greater than time slice
+            // then current response time is equal to
+            // (previous response time + time slice)
+            responseTime[i] = responseTime[i-1] + timeSlice;
+        } else {
+            // if previous burst time is lesser or equal time slice
+            // then current response time is equal to
+            // (previous response time + previous burst time)
+            responseTime[i] = responseTime[i-1] + backupBurstTime[i-1];
+        }
+    }
+
+    printf("\n\t PROCESS\t BURST TIME\t WAITING TIME\t TURNAROUND TIME\t RESPONSE TIME\n");
+    for (i = 0; i < numProcesses; i++) {
+        printf("\t P%d \t\t %d \t\t %d \t\t %d \t\t\t %d \n", process[i], backupBurstTime[i], waitTime[i], turnAroundTime[i], responseTime[i]);
+    }
+
+    /*Calculate and print the ‘average waiting time’,
+    ‘average turn-around-time’, and 'average response time' */
+
+    for (i = 0; i < numProcesses; i++) {
+        avgWaitTime += waitTime[i];
+        avgTurnAroundTime += turnAroundTime[i];
+        avgResponseTime += responseTime[i];
+    }
+
+    printf("\n\t The Average Waiting time: %.2f\n", avgWaitTime / numProcesses);
+    printf("\n\t The Average Turnaround time: %.2f\n", avgTurnAroundTime / numProcesses);
+    printf("\n\t The Average Response time: %.2f\n", avgResponseTime / numProcesses);
+    printf("\n\t The context Switch: %d\n", contextSwitch);
+
+}
+
+// insertion sort used to emulate an SJF within our traditional RR. 
+void insertSort(int arr[], int p[], int n)
+{
+    int i, key, pkey, j;
+    for (i = 1; i < n; i++) {
+        key = arr[i];
+        pkey = p[i];
+        j = i - 1;
+
+        while (j >= 0 && arr[j] > key) {
+            arr[j+1] = arr[j];
+            p[j+1] = p[j];
+            j = j - 1;
+        }
+        arr[j+1] = key;
+        p[j+1] = pkey;
+    }
+
+    
+
+}
+
