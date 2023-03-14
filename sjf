@@ -1,0 +1,87 @@
+#include <stdio.h>
+
+void insertSort();
+
+int main()
+{
+    int numProcesses = 0;
+
+    int pnumber[10];
+    int burstTime[10];
+    int waitTime[10];
+    int turnAroundTime[10];
+    int responseTime[10];
+
+    float avgWaitTime = 0.0;
+    float avgTurnAroundTime = 0.0;
+    float avgResponseTime = 0.0;
+
+    printf("\n\t Enter the no of processes: ");
+    scanf("%d", &numProcesses);
+
+    for (int i = 0; i < numProcesses; i++)
+    {
+        printf("\n\t Enter Burst Time for process %d: ", i + 1);
+        scanf("%d", &burstTime[i]);
+        pnumber[i] = i+1;
+    }
+
+    insertSort(burstTime, pnumber, numProcesses);
+    for (int i = 0; i < numProcesses; i++) {
+        printf("%d\n", burstTime[i]);
+    }
+
+    for (int i = 0; i < numProcesses; i++)
+    {
+        // waitTime
+        if (i == 0)
+        {
+            waitTime[i] = 0;
+        }
+        else
+        {
+            waitTime[i] = waitTime[i - 1] + burstTime[i - 1];
+        }
+        // turnAroundTime
+        turnAroundTime[i] = waitTime[i] + burstTime[i];
+        // responseTime
+        responseTime[i] = waitTime[i];
+    }
+    /*Calculate and print the ‘average waiting time’,
+    ‘average turn-around-time’, and 'average response time' */
+
+    for (int i = 0; i < numProcesses; i++)
+    {
+        avgWaitTime += waitTime[i];
+        avgTurnAroundTime += turnAroundTime[i];
+        avgResponseTime += responseTime[i];
+    }
+
+    printf("\n\t PROCESS\t BURST TIME\t WAITING TIME\t TURNAROUND TIME\t RESPONSE TIME\n");
+    for (int i = 0; i < numProcesses; i++)
+    {
+        printf("\t P%d \t\t %d \t\t %d \t\t %d \t\t\t %d \n", pnumber[i], burstTime[i], waitTime[i], turnAroundTime[i], responseTime[i]);
+    }
+
+    printf("\n\t The Average Waiting time: %.2f\n", avgWaitTime / numProcesses);
+    printf("\n\t The Average Turnaround time: %.2f\n", avgTurnAroundTime / numProcesses);
+    printf("\n\t The Average Response time: %.2f\n", avgResponseTime / numProcesses);
+}
+
+void insertSort(int arr[], int p[], int n)
+{
+    int i, key, pkey, j;
+    for (i = 1; i < n; i++) {
+        key = arr[i];
+        pkey = p[i];
+        j = i - 1;
+
+        while (j >= 0 & arr[j] > key) {
+            arr[j+1] = arr[j];
+            p[j+1] = p[j];
+            j = j - 1;
+        }
+        arr[j+1] = key;
+        p[j+1] = pkey;
+    }
+}
